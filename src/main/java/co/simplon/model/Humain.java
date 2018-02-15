@@ -9,6 +9,23 @@ public class Humain {
 	private Date dateNaissance;
 	private String genre;
 	
+	
+	
+	public Humain(String nom, String prenom, Date dateNaissance, String genre) {
+		super();
+		this.nom = nom;
+		this.prenom = prenom;
+		this.dateNaissance = dateNaissance;
+		this.genre = genre;
+	}
+	
+	
+	public Humain() {
+		super();
+		// TODO Auto-generated constructor stub
+	}
+
+
 	//getters setters
 	public String getNom() {
 		return nom;

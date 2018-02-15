@@ -20,12 +20,12 @@ import co.simplon.model.Suspect;
 @Repository
 public class jdbcSuspectDAO implements SuspectDAO {
 	
-	private DataSource dataSource;
+	private DataSource datasource;
 	private final Logger log = LoggerFactory.getLogger(this.getClass());
 	
 	@Autowired
 	public jdbcSuspectDAO(JdbcTemplate jdbcTemplate) {
-		this.dataSource = jdbcTemplate.getDataSource();
+		this.datasource = jdbcTemplate.getDataSource();
 	}
 
 	@Override
@@ -34,12 +34,12 @@ public class jdbcSuspectDAO implements SuspectDAO {
 		PreparedStatement pstmt = null;
 		ResultSet rs;
 		String sql;
-		ArrayList <Suspect> listOfSuspect = new ArrayList<>();
+		ArrayList <Suspect> listSuspect = new ArrayList<Suspect>();
 		
 		try {
 			// Prepare la requete sql
-			sql = "SELECT nom,prenom FROM suspect ";
-			pstmt = dataSource.getConnection().prepareStatement(sql);
+			sql = "SELECT * FROM suspect";
+			pstmt = datasource.getConnection().prepareStatement(sql);
 			
 			// Run la requete
 			rs = pstmt.executeQuery();
@@ -50,7 +50,7 @@ public class jdbcSuspectDAO implements SuspectDAO {
 			// gere le resultat de la requete
 			while (rs.next()) {
 				suspect = getSuspectFromResultSet(rs);
-				listOfSuspect.add(suspect);
+				listSuspect.add(suspect);
 			}
 				
 		} catch (Exception e) {
@@ -61,7 +61,7 @@ public class jdbcSuspectDAO implements SuspectDAO {
 			pstmt.close();
 		}
 		
-		return listOfSuspect;
+		return listSuspect;
 	}
 
 	@Override
@@ -73,7 +73,7 @@ public class jdbcSuspectDAO implements SuspectDAO {
 		try {
 			// Prepare requet sql
 			String sql = "SELECT * FROM suspect WHERE nom = ?";
-			pstmt = dataSource.getConnection().prepareStatement(sql);
+			pstmt = datasource.getConnection().prepareStatement(sql);
 			pstmt.setString(1, nom);
 
 			// Log info
@@ -110,7 +110,7 @@ public class jdbcSuspectDAO implements SuspectDAO {
 		try {
 			// Prepare the SQL query
 			String sql = "INSERT INTO suspect ( nom, prenom, genre, date_naissance, origine, taille, poids, adresse_connue, signe_distinctif,photo, empreinte, casier,condamantion, type_condamnation ) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?)";
-			pstmt = dataSource.getConnection().prepareStatement(sql, PreparedStatement.RETURN_GENERATED_KEYS);
+			pstmt = datasource.getConnection().prepareStatement(sql, PreparedStatement.RETURN_GENERATED_KEYS);
 			pstmt.setString(++i, suspect.getNom());
 			pstmt.setString(++i, suspect.getPrenom());
 			pstmt.setString(++i, suspect.getGenre());
@@ -161,7 +161,7 @@ public class jdbcSuspectDAO implements SuspectDAO {
 		
 		try {
 			String sql = "INSERT INTO enquete_has_suspect(suspect_id, enquete_id) VALUES ((SELECT id_suspect FROM suspect WHERE nom=? AND prenom=?),?)";
-			pstmt = dataSource.getConnection().prepareStatement(sql, PreparedStatement.RETURN_GENERATED_KEYS);
+			pstmt = datasource.getConnection().prepareStatement(sql, PreparedStatement.RETURN_GENERATED_KEYS);
 			pstmt.setString(++i, suspect.getNom());
 			pstmt.setString(++i, suspect.getPrenom());
 			pstmt.setInt(++i, enquete.getNumeroDossier());
@@ -189,7 +189,7 @@ public class jdbcSuspectDAO implements SuspectDAO {
 		try {
 			// Prepare the SQL query
 			String sql = "UPDATE actor SET nom = ?, prenom = ?, genre = ?, date_naissance = ?, origine=? ,taille= ?, poids=?, adresse_connue=?, signe_distinctif=?, photo=?, empreinte=?, casier=?, condamnation=?, type_condamnation=? WHERE nom = ? AND prenom=?";
-			pstmt = dataSource.getConnection().prepareStatement(sql);
+			pstmt = datasource.getConnection().prepareStatement(sql);
 			pstmt.setString(++i, suspect.getNom());
 			pstmt.setString(++i, suspect.getPrenom());
 			pstmt.setString(++i, suspect.getGenre());
@@ -232,6 +232,19 @@ public class jdbcSuspectDAO implements SuspectDAO {
 		Suspect suspect = new Suspect();
 		suspect.setNom(rs.getString("nom"));
 		suspect.setPrenom(rs.getString("prenom"));
+		suspect.setGenre(rs.getString("genre"));
+		suspect.setDateNaissance( rs.getDate("date_naissance"));
+		suspect.setNationalité(rs.getString("origine"));
+		suspect.setTaille(rs.getFloat("taille"));
+	    suspect.setPoid(rs.getInt("poids"));
+		suspect.setAdresseConnues(rs.getString("adresse_connue"));
+		suspect.setSigneDistinctif(rs.getString("signe_distinctif"));
+    	suspect.setPhoto(rs.getString("photo"));
+		suspect.setEmpreinte(rs.getString("empreinte"));
+		suspect.setCasierJudiciaire(rs.getBoolean("casier"));
+		suspect.setCondamnations(rs.getInt("condamnation"));
+		suspect.setTypeCondamnation(rs.getString("type_condamantion"));
+	
 		
 		return suspect;	
 	}

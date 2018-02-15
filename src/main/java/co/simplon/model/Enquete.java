@@ -1,7 +1,7 @@
 package co.simplon.model;
 
 import java.sql.Date;
-import java.text.DateFormat;
+
 
 public class Enquete {
 	private int numeroDossier;

@@ -1,7 +1,7 @@
 package co.simplon.controller;
 
 
-import java.util.Date;
+
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -21,15 +21,15 @@ import co.simplon.service.SuspectService;
 
 
 @RestController
-@RequestMapping("/")
+@RequestMapping("/csi")
 public class SuspectController {
 	
 	 @Autowired
 	 private SuspectService suspectService;
 	 
 		@RequestMapping(value = "/suspects", method = RequestMethod.GET)
-		public ResponseEntity<?> getAllSuspect(){
-			List<Suspect> listSuspect = null;
+		public ResponseEntity <?> getAllSuspect(){
+			List <Suspect> listSuspect = null;
 			try {
 				listSuspect= suspectService.getAllSuspect();
 			} catch (Exception e) {
@@ -99,7 +99,7 @@ public class SuspectController {
 			
 			String genre =suspect.getGenre();
 			if((genre == null) || (genre.isEmpty()))
-				return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("saisissez le sexe !");
+				return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("saisissez le sexe du suspect !");
 			
 			String adresseConnue = suspect.getAdresseConnues();
 			if((adresseConnue == null) || (adresseConnue.isEmpty()))
@@ -108,6 +108,8 @@ public class SuspectController {
 			return  ResponseEntity.status(HttpStatus.CREATED).body(result);
 			
 		}
+		
+	
 		
 		
 	

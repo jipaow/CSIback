@@ -15,10 +15,32 @@ public class Suspect extends Humain {
 	
 	
 	
+	public Suspect(String adresseConnues, float taille, int poid, String signeDistinctif, String nationalité,
+			boolean casierJudiciaire, int condamnations, String empreinte, String typeCondamnation, String photo) {
+		super();
+		this.adresseConnues = adresseConnues;
+		this.taille = taille;
+		this.poid = poid;
+		this.signeDistinctif = signeDistinctif;
+		this.nationalité = nationalité;
+		this.casierJudiciaire = casierJudiciaire;
+		this.condamnations = condamnations;
+		this.empreinte = empreinte;
+		this.typeCondamnation = typeCondamnation;
+		this.photo = photo;
+	}
+	
+	
+	public Suspect() {
+		super();
+		// TODO Auto-generated constructor stub
+	}
+
 	//getters setters
 	public String getEmpreinte() {
 		return empreinte;
 	}
+	
 	public void setEmpreinte(String empreinte) {
 		this.empreinte = empreinte;
 	}
