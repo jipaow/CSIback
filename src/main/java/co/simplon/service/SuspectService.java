@@ -6,8 +6,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import co.simplon.dao.SuspectDAO;
-import co.simplon.model.Enquete;
 import co.simplon.model.Suspect;
+import co.simplon.model.SuspectEnquete;
+
 
 
 @Service
@@ -22,8 +23,8 @@ public class SuspectService {
 	}
 	
 	// Retrieves one row from table based on given id
-	public Suspect getSuspect(String nom) throws Exception {
-		return dao.getSuspect(nom);
+	public Suspect getSuspect(int id) throws Exception {
+		return dao.getSuspect(id);
 	}
 	
 	// Inserts row into table 
@@ -31,13 +32,12 @@ public class SuspectService {
 		return dao.insertSuspect(suspect);
 	}
 	
-	public Suspect upDateSuspect(Suspect suspect) throws Exception {
+	public Suspect updateSuspect( int id ,Suspect suspect) throws Exception {
 		return dao.updateSuspect(suspect);
 	}
 	
-	public Suspect addSuspectToEnquete (Suspect suspect ,Enquete enquete) throws Exception {
-		return dao.addSuspectToEnquete(suspect, enquete);
+	public SuspectEnquete addSuspectToEnquete (SuspectEnquete suspectEnquete) throws Exception {
+		return dao.addSuspectToEnquete(suspectEnquete);
 	}
-	
-
 }
+

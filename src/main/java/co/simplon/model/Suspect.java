@@ -2,6 +2,7 @@ package co.simplon.model;
 
 public class Suspect extends Humain {
 	
+
 	private String adresseConnues;
 	private float taille;
 	private int poid;

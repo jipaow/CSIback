@@ -12,8 +12,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;
 
-import co.simplon.model.Enquete;
 import co.simplon.model.Suspect;
+import co.simplon.model.SuspectEnquete;
+
+
 
 
 
@@ -65,16 +67,16 @@ public class jdbcSuspectDAO implements SuspectDAO {
 	}
 
 	@Override
-	public Suspect getSuspect(String nom) throws Exception {
+	public Suspect getSuspect(int id) throws Exception {
 		PreparedStatement pstmt = null;
 		ResultSet rs;
 		Suspect suspect = null;
 
 		try {
 			// Prepare requet sql
-			String sql = "SELECT * FROM suspect WHERE nom = ?";
+			String sql = "SELECT * FROM suspect WHERE id_suspect = ?";
 			pstmt = datasource.getConnection().prepareStatement(sql);
-			pstmt.setString(1, nom);
+			pstmt.setInt(1, id);
 
 			// Log info
 			logSQL(pstmt);
@@ -105,11 +107,11 @@ public class jdbcSuspectDAO implements SuspectDAO {
 		// TODO
 		// force auto incremente en initialisant à 0, sinon erreur sql si id
 		// existant
-		//suspect.setId(new Long(0));
+		//suspect.setId(new int(0));
 
 		try {
 			// Prepare the SQL query
-			String sql = "INSERT INTO suspect ( nom, prenom, genre, date_naissance, origine, taille, poids, adresse_connue, signe_distinctif,photo, empreinte, casier,condamantion, type_condamnation ) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?)";
+			String sql = "INSERT INTO suspect ( nom, prenom, genre, date_naissance, origine, taille, poids, adresse_connue, signe_distinctif,photo, empreinte, casier,condamnation, type_condamantion ) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?)";
 			pstmt = datasource.getConnection().prepareStatement(sql, PreparedStatement.RETURN_GENERATED_KEYS);
 			pstmt.setString(++i, suspect.getNom());
 			pstmt.setString(++i, suspect.getPrenom());
@@ -130,7 +132,7 @@ public class jdbcSuspectDAO implements SuspectDAO {
 			logSQL(pstmt);
 			
 			// Run the the update query
-			//pstmt.executeUpdate();
+			pstmt.executeUpdate();
 
 			// TODO 
 			// recupération de l'id genere, et maj de l'acteur avec l'id et la date de modif
@@ -154,17 +156,22 @@ public class jdbcSuspectDAO implements SuspectDAO {
 	}
 	
 	@Override
-	public Suspect addSuspectToEnquete(Suspect suspect , Enquete enquete) throws Exception {
+	public SuspectEnquete addSuspectToEnquete(SuspectEnquete suspectEnquete) throws Exception {
 		PreparedStatement pstmt = null;
-		Suspect result = null;
+		SuspectEnquete result = null;
 		int i = 0;
 		
+		// force auto incremente en initialisant à 0, sinon erreur sql si id
+				// existant
+			//enquete.setNumeroDossier(int(0));
+		
 		try {
-			String sql = "INSERT INTO enquete_has_suspect(suspect_id, enquete_id) VALUES ((SELECT id_suspect FROM suspect WHERE nom=? AND prenom=?),?)";
+			String sql = "INSERT INTO enquete_has_suspect(enquete_id, suspect_id ) VALUES (?,?)";
 			pstmt = datasource.getConnection().prepareStatement(sql, PreparedStatement.RETURN_GENERATED_KEYS);
-			pstmt.setString(++i, suspect.getNom());
-			pstmt.setString(++i, suspect.getPrenom());
-			pstmt.setInt(++i, enquete.getNumeroDossier());
+			pstmt.setInt(++i, suspectEnquete.getEnquete().getNumeroDossier());
+			pstmt.setInt(++i, suspectEnquete.getSuspect().getId());
+			//System.out.println(suspect.getId());
+			//System.out.println("test requete");
 			
 			// Log info
 		    logSQL(pstmt);
@@ -173,10 +180,11 @@ public class jdbcSuspectDAO implements SuspectDAO {
 			e.printStackTrace();
 			log.error("SQL Error !:" + pstmt.toString(), e);
 			throw e;
+			
 		} finally {
 			pstmt.close();
 		}
-		
+		System.out.println("test final dao");
 		return result;
 	}
 
@@ -185,10 +193,10 @@ public class jdbcSuspectDAO implements SuspectDAO {
 		Suspect result = null;
 		PreparedStatement pstmt = null;
 		int i = 0;
-			
+
 		try {
 			// Prepare the SQL query
-			String sql = "UPDATE actor SET nom = ?, prenom = ?, genre = ?, date_naissance = ?, origine=? ,taille= ?, poids=?, adresse_connue=?, signe_distinctif=?, photo=?, empreinte=?, casier=?, condamnation=?, type_condamnation=? WHERE nom = ? AND prenom=?";
+			String sql = "UPDATE suspect SET nom = ?, prenom = ?, genre = ?, date_naissance = ?, origine=? ,taille= ?, poids=?, adresse_connue=?, signe_distinctif=?, photo=?, empreinte=?, casier=?, condamnation=?, type_condamantion=? WHERE id_suspect=?";
 			pstmt = datasource.getConnection().prepareStatement(sql);
 			pstmt.setString(++i, suspect.getNom());
 			pstmt.setString(++i, suspect.getPrenom());
@@ -204,17 +212,18 @@ public class jdbcSuspectDAO implements SuspectDAO {
 			pstmt.setBoolean(++i, suspect.isCasierJudiciaire());
 			pstmt.setInt(++i, suspect.getCondamnations());
 			pstmt.setString(++i, suspect.getTypeCondamnation());
+			pstmt.setInt(++i, suspect.getId());
+			
 			
 			// Log info
 			logSQL(pstmt);
 			
 			// Run the the update query
-//			int resultCount = pstmt.executeUpdate();
-//			if(resultCount != 1)
-//				throw new Exception("Actor not found !");
-//			
-//			suspect.setLastUpdate(updateTime);
-//			result = suspect;
+			int resultCount = pstmt.executeUpdate();
+			if(resultCount != 1)
+				throw new Exception("Suspect non trouvé !");
+			
+			result = suspect;
 
 		} catch (SQLException e) {
 			e.printStackTrace();
@@ -230,6 +239,7 @@ public class jdbcSuspectDAO implements SuspectDAO {
 	
 	private Suspect getSuspectFromResultSet(ResultSet rs) throws SQLException {
 		Suspect suspect = new Suspect();
+		suspect.setId(rs.getInt("id_suspect"));
 		suspect.setNom(rs.getString("nom"));
 		suspect.setPrenom(rs.getString("prenom"));
 		suspect.setGenre(rs.getString("genre"));

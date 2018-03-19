@@ -4,6 +4,7 @@ import java.sql.Date;
 
 
 public class Humain {
+	private int id;
 	private String nom;
 	private String prenom;
 	private Date dateNaissance;
@@ -11,7 +12,7 @@ public class Humain {
 	
 	
 	
-	public Humain(String nom, String prenom, Date dateNaissance, String genre) {
+public Humain( int id, String nom, String prenom, Date dateNaissance, String genre) {
 		super();
 		this.nom = nom;
 		this.prenom = prenom;
@@ -27,9 +28,19 @@ public class Humain {
 
 
 	//getters setters
+	
+	
 	public String getNom() {
 		return nom;
 	}
+	public int getId() {
+		return id;
+	}
+
+	public void setId(int id) {
+		this.id = id;
+	}
+
 	public void setNom(String nom) {
 		this.nom = nom;
 	}

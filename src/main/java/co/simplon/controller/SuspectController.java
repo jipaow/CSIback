@@ -11,13 +11,12 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 
 import co.simplon.model.Suspect;
+import co.simplon.model.SuspectEnquete;
 import co.simplon.service.SuspectService;
-
-
-
 
 
 @RestController
@@ -40,12 +39,12 @@ public class SuspectController {
 		}
 		
 		
-		@RequestMapping(value = "/suspect/{nom}", method = RequestMethod.GET)
-		public ResponseEntity<?> getSuspect(@PathVariable String nom){
+		@RequestMapping(value = "/suspect/{id}", method = RequestMethod.GET)
+		public ResponseEntity<?> getSuspect(@PathVariable int id){
 			Suspect suspect = null;
 					
 			try {
-				suspect =suspectService.getSuspect(nom);
+				suspect =suspectService.getSuspect(id);
 			} catch (Exception e) {
 				return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
 			}
@@ -85,13 +84,14 @@ public class SuspectController {
 			
 		}
 		
-		@RequestMapping(value ="/suspect{nom}", method = RequestMethod.PUT)
-		public ResponseEntity<?> updateSuspect(@RequestBody Suspect suspect,@PathVariable String nom) throws Exception{
+		@RequestMapping(value ="/suspect/{id}", method = RequestMethod.PUT)
+		public ResponseEntity<?> updateSuspect(@RequestBody Suspect suspect,@PathVariable int id) throws Exception{
 			
 			Suspect result = null;
 			
-			if((nom == null) || (nom.isEmpty()))
-				return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Le nom n'est pas saisi !");
+			String nom = suspect.getNom();
+		    if((nom == null) || (nom.isEmpty()))
+			return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Le nom n'est pas saisi !");
 			
 			String prenom = suspect.getPrenom();
 			if((prenom == null) || (prenom.isEmpty()))
@@ -105,13 +105,31 @@ public class SuspectController {
 			if((adresseConnue == null) || (adresseConnue.isEmpty()))
 				return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("saisissez votre chance de rentrer une adresse !");
 			
+			try {
+				result = suspectService.updateSuspect(id,suspect);
+			} catch (Exception e) {
+				return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
+			}
+			
 			return  ResponseEntity.status(HttpStatus.CREATED).body(result);
 			
 		}
 		
-	
-		
-		
+		@RequestMapping(value = "/suspect/link", method = RequestMethod.POST)
+		public ResponseEntity<?> addSuspectToEnquete(@RequestBody SuspectEnquete suspectEnquete){
+			SuspectEnquete resultSuspect = null;
+			
+			try {
+				resultSuspect = suspectService.addSuspectToEnquete(suspectEnquete);
+				System.out.println(resultSuspect);
+				
+			} catch (Exception e) {
+				return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
+			}
+			System.out.println(resultSuspect);
+			return ResponseEntity.status(HttpStatus.CREATED).body(resultSuspect);
+			
+		}
 	
 
 

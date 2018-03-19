@@ -1,5 +1,8 @@
 package co.simplon.dao;
 
+
+
+
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -12,32 +15,36 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.stereotype.Repository;
 
 import co.simplon.model.Enquete;
+import co.simplon.model.Suspect;
 
-
+@Repository
 public class jdbcEnqueteDAO implements EnqueteDAO {
 	
-	private DataSource dataSource;
+	private DataSource datasource;
 	private final Logger log = LoggerFactory.getLogger(this.getClass());
 	
 	@Autowired
 	public jdbcEnqueteDAO(JdbcTemplate jdbcTemplate) {
-		this.dataSource = jdbcTemplate.getDataSource();
+		this.datasource = jdbcTemplate.getDataSource();
 	}
 
+	
+	
 	@Override
 	public List<Enquete> listEnquete() throws Exception {
 		Enquete enquete;
 		PreparedStatement pstmt = null;
 		ResultSet rs;
 		String sql;
-		ArrayList <Enquete> listOfEnquete = new ArrayList<>();
+		ArrayList <Enquete> listEnquete = new ArrayList<Enquete>();
 		
 		try {
 			// Prepare la requete sql
-			sql = "SELECT id_enquete ,nom_enquete ,type_enquete FROM enquete ";
-			pstmt = dataSource.getConnection().prepareStatement(sql);
+			sql = "SELECT * FROM enquete";
+			pstmt = datasource.getConnection().prepareStatement(sql);
 			
 			// Run la requete
 			rs = pstmt.executeQuery();
@@ -48,7 +55,7 @@ public class jdbcEnqueteDAO implements EnqueteDAO {
 			// gere le resultat de la requete
 			while (rs.next()) {
 				enquete = getEnqueteFromResultSet(rs);
-				listOfEnquete.add(enquete);
+				listEnquete.add(enquete);
 			}
 				
 		} catch (Exception e) {
@@ -58,10 +65,10 @@ public class jdbcEnqueteDAO implements EnqueteDAO {
 		} finally {
 			pstmt.close();
 		}
-		
-		return listOfEnquete;
-
+	
+		return listEnquete;
 	}
+
 
 	@Override
 	public Enquete getEnquete(int numeroDossier) throws Exception {
@@ -72,8 +79,8 @@ public class jdbcEnqueteDAO implements EnqueteDAO {
 
 		try {
 			// Prepare requet sql
-			String sql = "SELECT * FROM suspect WHERE id_enquete = ?";
-			pstmt = dataSource.getConnection().prepareStatement(sql);
+			String sql = "SELECT * FROM enquete WHERE id_enquete = ?";
+			pstmt = datasource.getConnection().prepareStatement(sql);
 			pstmt.setInt(1, numeroDossier);
 
 			// Log info
@@ -93,46 +100,32 @@ public class jdbcEnqueteDAO implements EnqueteDAO {
 			pstmt.close();
 		}
 		return enquete;
-	
 	}
 
-	
 	@Override
 	public Enquete insertEnquete(Enquete enquete) throws Exception {
-		
 		PreparedStatement pstmt = null;
 		Enquete result = null;
 		int i = 0;
-		
-		// TODO
-		// force auto incremente en initialisant à 0, sinon erreur sql si id
-		// existant
-		//suspect.setId(new Long(0));
-
+	
 		try {
 			// Prepare the SQL query
-			String sql = "insert into enquete (nom_enquete,type_enquete, date_creation, localisation, statut) values (?,?,?,?,?)";
-			pstmt = dataSource.getConnection().prepareStatement(sql, PreparedStatement.RETURN_GENERATED_KEYS);
+			String sql = "INSERT INTO enquete ( nom_affaire, type_enquete, date_creation, localisation, statut ) VALUES (?,?,?,?,?)";
+			pstmt = datasource.getConnection().prepareStatement(sql, PreparedStatement.RETURN_GENERATED_KEYS);
 			pstmt.setString(++i, enquete.getNom());
 			pstmt.setString(++i, enquete.getCategorie());
 			pstmt.setDate(++i, enquete.getDateCreation());
 			pstmt.setString(++i, enquete.getLocalisation());
 			pstmt.setString(++i, enquete.getStatut());
+			
+			
 			// Log info
 			logSQL(pstmt);
 			
 			// Run the the update query
-			//pstmt.executeUpdate();
+			pstmt.executeUpdate();
 
-			// TODO 
-			// recupération de l'id genere, et maj de l'acteur avec l'id et la date de modif
-//			ResultSet rs = pstmt.getGeneratedKeys();
-//			if (rs.next()) {
-//				suspect.setId(rs.getLong(1));
-//				suspect.setLastUpdate(updateTime);
-//				
-//				result = suspect;
-//			}
+		
 		} catch (SQLException e) {
 			e.printStackTrace();
 			log.error("SQL Error !:" + pstmt.toString(), e);
@@ -144,36 +137,34 @@ public class jdbcEnqueteDAO implements EnqueteDAO {
 		return result;
 		
 	}
-		
-
 
 	@Override
 	public Enquete updateEnquete(Enquete enquete) throws Exception {
 		Enquete result = null;
 		PreparedStatement pstmt = null;
 		int i = 0;
-			
+
 		try {
 			// Prepare the SQL query
-			String sql = "UPDATE enquete SET nom_enquete =?, type_enquete=?, date_creation=?,localisation=?,statut=? WHERE id_enquete = ?";
-			pstmt = dataSource.getConnection().prepareStatement(sql);
+			String sql = "UPDATE enquete SET nom_affaire = ?, type_enquete = ?, date_creation = ?, localisation = ? , statut= ? WHERE id_enquete = ?";
+			pstmt = datasource.getConnection().prepareStatement(sql);
 			pstmt.setString(++i, enquete.getNom());
 			pstmt.setString(++i, enquete.getCategorie());
 			pstmt.setDate(++i, enquete.getDateCreation());
 			pstmt.setString(++i, enquete.getLocalisation());
 			pstmt.setString(++i, enquete.getStatut());
-	
+			pstmt.setInt(++i, enquete.getNumeroDossier());
+			
 			
 			// Log info
 			logSQL(pstmt);
 			
 			// Run the the update query
-//			int resultCount = pstmt.executeUpdate();
-//			if(resultCount != 1)
-//				throw new Exception("Actor not found !");
-//			
-//			suspect.setLastUpdate(updateTime);
-//			result = suspect;
+			int resultCount = pstmt.executeUpdate();
+			if(resultCount != 1)
+				throw new Exception("Suspect non trouvé !");
+			
+			result = enquete;
 
 		} catch (SQLException e) {
 			e.printStackTrace();
@@ -186,18 +177,8 @@ public class jdbcEnqueteDAO implements EnqueteDAO {
 		return result;
 		
 	}
-	
-	private Enquete getEnqueteFromResultSet(ResultSet rs) throws SQLException {
-		
-		Enquete enquete = new Enquete();
-		enquete.setNumeroDossier(rs.getInt("id_enquete"));
-		
-		return enquete;
-		
-	}
 
 	
-
 	private void logSQL(PreparedStatement pstmt) {
 	String sql;
 		
@@ -208,5 +189,20 @@ public class jdbcEnqueteDAO implements EnqueteDAO {
 		log.debug(sql);
 		
 	}
+
+	private Enquete getEnqueteFromResultSet(ResultSet rs) throws SQLException {
+		Enquete enquete = new Enquete();
+		enquete.setNumeroDossier(rs.getInt("id_enquete"));
+		enquete.setNom(rs.getString("nom_affaire"));
+		enquete.setCategorie(rs.getString("type_enquete"));
+		enquete.setDateCreation(rs.getDate("date_creation"));
+		enquete.setLocalisation(rs.getString("localisation"));
+		enquete.setStatut(rs.getString("statut"));
+
+		return enquete;	
+	}
+
+	
+
 	
 }
